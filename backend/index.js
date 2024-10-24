@@ -6,9 +6,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect('mongodb://localhost:27017/todoDB')
+mongoose.connect('mongodb://mongodb:27017/todoDB', { serverSelectionTimeoutMS: 20000 }) // 20 seconds
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
+
 
 const taskSchema = new mongoose.Schema({
     name: {
@@ -35,14 +36,13 @@ const taskSchema = new mongoose.Schema({
     }
 });
 
-
 const Task = mongoose.model('Task', taskSchema);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(bodyParser.json());
-app.use(express.static('frontend'));
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.get('/api/tasks', async (req, res) => {
     const tasks = await Task.find();
@@ -65,7 +65,6 @@ app.post('/api/tasks', async (req, res) => {
         res.status(400).send('Lỗi khi lưu công việc: ' + error.message);
     }
 });
-
 
 app.get('/', (req, res) => {
     res.render('index');
@@ -101,5 +100,5 @@ app.delete('/api/tasks/:id', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`http://localhost:${PORT}/`);
+    console.log(`Server đang chạy tại http://localhost:${PORT}/`);
 });
